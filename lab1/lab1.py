@@ -1,5 +1,4 @@
 import numpy as np
-from numpy.lib.function_base import append
 from tabulate import tabulate
 
 
@@ -22,7 +21,7 @@ def add_table(p):
     table = np.zeros(shape=[p, p + 1])
     headers = ['+']
     for i in range(0, p + 1):
-        headers = append(headers, i)
+        headers = np.append(headers, i)
         if(i < p):
             table[i, 0] = i
 
@@ -42,7 +41,7 @@ def mul_table(p):
     table = np.zeros(shape=[p, p + 1])
     headers = ['*']
     for i in range(0, p + 1):
-        headers = append(headers, i)
+        headers = np.append(headers, i)
         if(i < p):
             table[i, 0] = i
 
