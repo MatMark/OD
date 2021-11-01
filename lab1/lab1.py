@@ -60,22 +60,22 @@ def opposite(p):
     table = np.zeros(shape=[2, p])
     for i in range(0, p):
         table[0, i] = i
-        table[1, i] = -i
+        table[1, i] = -i%p
     print("Przeciwne:")
     print(tabulate(table, tablefmt="fancy_grid"))
 
 
-def invert(p):
-    table = np.zeros(shape=[2, p-1])
-    for i in range(1, p):
-        table[0, i-1] = i
-        table[1, i-1] = 1/i
-    print("Odwrotne:")
-    print(tabulate(table, tablefmt="fancy_grid"))
+# def invert(p):
+#     table = np.zeros(shape=[2, p-1])
+#     for i in range(1, p):
+#         table[0, i-1] = i
+#         table[1, i-1] = (1/i)%p
+#     print("Odwrotne:")
+#     print(tabulate(table, tablefmt="fancy_grid"))
 
 
 p = user_input()
 add_table(p)
 mul_table(p)
 opposite(p)
-invert(p)
+# invert(p)
