@@ -65,17 +65,20 @@ def opposite(p):
     print(tabulate(table, tablefmt="fancy_grid"))
 
 
-# def invert(p):
-#     table = np.zeros(shape=[2, p-1])
-#     for i in range(1, p):
-#         table[0, i-1] = i
-#         table[1, i-1] = (i*i)%p
-#     print("Odwrotne:")
-#     print(tabulate(table, tablefmt="fancy_grid"))
+def invert(p):
+    table = np.zeros(shape=[2, p-1])
+    for i in range(1, p):
+        table[0, i-1] = i
+        for j in range(1, p):
+            if((i*j)%p == 1):
+                table[1, i-1] = j
+    print("Odwrotne:")
+    print(tabulate(table, tablefmt="fancy_grid"))
 
 
 def multiplicative(p):
     table = np.zeros(shape=[2, p])
+    val = []
     for i in range(1, p):
         table[0, i] = i
         if(i < p):
@@ -84,16 +87,20 @@ def multiplicative(p):
                     break
             if(j != p):
                 table[1, i] = j
+                if (j == p - 1):
+                    val.append(i)
             else:
                 table[1, i] = -1
     print("Rząd multiplikatywny:")
     # table[:,1:] pominięcie pierwszej kolumny
     print(tabulate(table[:, 1:], tablefmt="fancy_grid"))
+    print("Elementy pierwotne:")
+    print(val)
 
 
 p = user_input()
 add_table(p)
 mul_table(p)
 opposite(p)
-# invert(p)
+invert(p)
 multiplicative(p)
