@@ -2,7 +2,7 @@ import math
 
 import numpy as np
 from tabulate import tabulate
-from helpers import headings, user_input, menu
+from helpers import headings, headers_table, user_input, menu
 
 
 ZechTable = {
@@ -60,6 +60,26 @@ def mul(x: int, y: int, p: int, m: int):
         return 0
 
 
+def table_func(p: int, m: int, func):
+    q = int(math.pow(p, m))
+    table = np.array(np.zeros((q, q), dtype=int), dtype=str)
+    for i in range(0, q):
+        for j in range(0, q):
+            table[i][j] = func(i, j, p, m)
+
+    # headers
+    if (func.__name__ == 'add'):
+        operator = '+'
+    elif (func.__name__ == 'mul'):
+        operator = '*'
+    else:
+        operator = ''
+    x, y = headers_table(q, operator)
+    table = np.insert(table, 0, x, axis=0)
+    table = np.insert(table, 0, y, axis=1)
+    return table
+
+
 def zad1():
     print(tabulate((mulTable(2, 3)), tablefmt="fancy_grid"))
     print(tabulate((mulTable(2, 4)), tablefmt="fancy_grid"))
@@ -74,4 +94,14 @@ def zad2():
     print('{} * {} ='.format(x, y), mul(x, y, p, m))
 
 
-menu({1: zad1, 2: zad2})
+def zad3():
+    print(tabulate(table_func(2, 2, add), tablefmt="fancy_grid"))
+    print(tabulate(table_func(2, 3, add), tablefmt="fancy_grid"))
+    print(tabulate(table_func(2, 4, add), tablefmt="fancy_grid"))
+
+    print(tabulate(table_func(2, 2, mul), tablefmt="fancy_grid"))
+    print(tabulate(table_func(2, 3, mul), tablefmt="fancy_grid"))
+    print(tabulate(table_func(2, 4, mul), tablefmt="fancy_grid"))
+
+
+menu({1: zad1, 2: zad2, 3: zad3})
