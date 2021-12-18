@@ -1,14 +1,13 @@
-/* PROGRAM DECIPHER  */
-/* Program deciphering one block of text.
-The values of hexinbin are read from the file HEX.DAT.
-The procedure GLOPEN is used to assign HEX.DAT to infile
+/* PROGRAM CIPHER  */
+/* Program ciphering one block of text.
+The values of hexinbin are read from the file hex.dat.
+The procedure GLOPEN is used to assign hex.dat to infile
 and open the file for reading. */
 
 #include <conio.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <math.h>
-
 #include <iostream>
 #include <sstream>
 
@@ -33,8 +32,7 @@ typedef int gl4_16array[4][16];
    FILE         *infile;
 */
 
-void glopen(FILE **infile,
-            const char *filename) // zmiana char * na const char*
+void glopen(FILE **infile, const char *filename) // zmiana z char *  na const char *
 {
    if ((*infile = fopen(filename, "r")) == NULL)
    {
@@ -50,8 +48,8 @@ void ks(gl64array key,
         gl56array ipc1,
         gl48array ipc2,
         gl56array glicd)
-/* The values of ipc1 and ipc2 are read from the file KSINPU.DAT.
-   The procedure GLOPEN assigns KSINPU.DAT to infile
+/* The values of ipc1 and ipc2 are read from the file ksinpu.dat.
+   The procedure GLOPEN assigns ksinpu.dat to infile
    and opens the file for reading. */
 {
    int i, j, it, id, ic;
@@ -75,6 +73,7 @@ void ks(gl64array key,
          glicd[j] = key[ipc1[j] - 1];
       }
    }
+
    it = 1;
    if (((n == 0) || (n == 1) || (n == 8) || (n == 15)))
       it = 0;
@@ -116,7 +115,7 @@ void cyfun(gl32array ir,
      ibin: ARRAY[1..4,1..16] OF int;
      cyflg: boolean;
   and initialize cyflg to true. The values of iet, ipp, is and ibin are read
-  from the file CYFUNI.DAT. The procedure GLOPEN assigns CYFUNI.DAT to
+  from the file cyfuni.dat. The procedure GLOPEN assigns cyfuni.dat to
   infile and opens the file for reading. */
 {
    int j, jj, irow, icol, kk, iss, ki;
@@ -130,19 +129,15 @@ void cyfun(gl32array ir,
       glopen(&infile, "CYFUNI.DAT");
       for (j = 0; j <= 47; j++)
          fscanf(infile, "%d", &(iet[j]));
-
       for (j = 0; j <= 31; j++)
          fscanf(infile, "%d", &(ipp[j]));
-
       for (jj = 0; jj <= 7; jj++)
          for (ki = 0; ki <= 3; ki++)
             for (j = 0; j <= 15; j++)
                fscanf(infile, "%d", &(is[j][ki][jj]));
-
       for (j = 0; j <= 15; j++)
          for (ki = 0; ki <= 3; ki++)
             fscanf(infile, "%d", &(ibin[ki][j]));
-
       fclose(infile);
    }
 
@@ -156,7 +151,6 @@ void cyfun(gl32array ir,
       icol = 8 * ie[j + 1] + 4 * ie[j + 2] + 2 * ie[j + 3] + ie[j + 4] - 1;
       iss = is[icol + 1][irow + 1][jj] - 1;
       kk = 4 * (jj);
-
       for (ki = 0; ki <= 3; ki++)
          itmp[kk + ki] = ibin[ki][iss + 1];
    }
@@ -165,24 +159,24 @@ void cyfun(gl32array ir,
       iout[j] = itmp[ipp[j] - 1];
 }
 
-void d_des(gl64array inpt,
-           gl64array key,
-           gl64array jotput,
-           int desflg,
-           gl64array ip,
-           gl64array ipm,
-           int ksflg,
-           gl56array ipc1,
-           gl48array ipc2,
-           gl56array glicd,
-           int cyflg,
-           gl48array iet,
-           gl32array ipp,
-           gl16_4_8array is,
-           gl4_16array ibin)
+void des(gl64array inpt,
+         gl64array key,
+         gl64array jotput,
+         int desflg,
+         gl64array ip,
+         gl64array ipm,
+         int ksflg,
+         gl56array ipc1,
+         gl48array ipc2,
+         gl56array glicd,
+         int cyflg,
+         gl48array iet,
+         gl32array ipp,
+         gl16_4_8array is,
+         gl4_16array ibin)
 
-/* The values of ip and ipm are read from the file DESINP.DAT.
-   The procedure GLOPEN is used to assign DESINP.DAT
+/* The values of ip and ipm are read from the file desinp.dat.
+   The procedure GLOPEN is used to assign desinp.dat
    to infile and open the file for reading. */
 {
    int j, ii, ic, i;
@@ -196,22 +190,18 @@ void d_des(gl64array inpt,
    {
       desflg = 0;
       glopen(&infile, "DESINP.DAT");
-
       for (i = 0; i <= 63; i++)
          fscanf(infile, "%d", &(ip[i]));
-
       for (i = 0; i <= 63; i++)
          fscanf(infile, "%d", &(ipm[i]));
-
       fclose(infile);
    }
 
    for (i = 0; i <= 15; i++)
    {
       ks(key, i, tkns, ksflg, ipc1, ipc2, glicd);
-
       for (j = 0; j <= 47; j++)
-         kns[j][15 - i] = tkns[j]; // zmiana kolejnosci kluczy z i na 15-i
+         kns[j][i] = tkns[j];
    }
 
    for (j = 0; j <= 63; j++)
@@ -220,7 +210,6 @@ void d_des(gl64array inpt,
    for (i = 0; i <= 15; i++)
    {
       ii = i;
-
       for (j = 0; j <= 47; j++)
          tkns[j] = kns[j][ii];
 
@@ -228,7 +217,6 @@ void d_des(gl64array inpt,
          titmp[j] = itmp[32 + j];
 
       cyfun(titmp, tkns, icf, cyflg, iet, ipp, is, ibin);
-
       for (j = 0; j <= 31; j++)
       {
          ic = icf[j] + itmp[j];
@@ -263,7 +251,6 @@ void HEXTOBIN(char *htext,
          inte = int(0) + htext[i] - 'a' + 10;
       else
          inte = 0;
-
       /* Convertion int to binary. */
       for (j = 0; j <= 3; j++)
          result[i * 4 + j] = hexinbin[j][inte];
@@ -271,11 +258,11 @@ void HEXTOBIN(char *htext,
 }
 
 void BINTOHEX(gl64array jotput)
-/* Converts binary numbe to printed hexadecimal equivalent */
+/* Converts binary number to printed hexadecimal equivalent */
 {
    int i, j, inte, weight;
 
-   printf("DeCipher hex: ");
+   printf("Cipher hex: ");
    for (i = 0; i <= 15; i++)
    {
       inte = 0;
@@ -285,7 +272,6 @@ void BINTOHEX(gl64array jotput)
          inte = inte + jotput[(i * 4 + 3 - j)] * weight;
          weight = weight * 2;
       } /* Convertion intger to hexadecimal. */
-
       if (inte <= 9)
          printf("%c   ", char(inte) + '0');
       else
@@ -304,27 +290,6 @@ void TEXTTOHEX(std::string inputText, std::string &outputText)
    std::cout << std::endl;
 
    outputText = ss.str();
-}
-
-std::string BINTOTEXT(gl64array jotput)
-{
-   std::string out;
-
-   char outTab[9];
-
-   for (int charIndex = 0; charIndex < 8; charIndex++)
-   {
-      outTab[charIndex] = 0;
-      for (int bitOfCHarIndex = 0; bitOfCHarIndex < 8; bitOfCHarIndex++)
-      {
-         outTab[charIndex] <<= 1;
-         outTab[charIndex] += jotput[(charIndex * 8) + bitOfCHarIndex];
-      }
-   }
-
-   outTab[8] = 0;
-
-   return std::string(outTab);
 }
 
 int main()
@@ -350,60 +315,68 @@ int main()
 
    fclose(infile);
    printf("\n");
-   printf("*** PROGRAM DECIPHER ***\n");
+   printf("*** PROGRAM CIPHER ***\n");
    printf("\n");
 
-   printf("Type ciphertext <16 hexadecimal characters [0..f] + ENTER>:\n");
-   for (i = 0; i <= 15; i++)
-      htext[i] = 48;
+   std::string inputText;
+   std::string outputText;
+   printf("Type plaintext <8 ASCII characters + ENTER>:\n");
+   printf("Type ascii:\n");
+   printf("00000000\r");
+   std::cin >> inputText;
+   TEXTTOHEX(inputText, outputText);
+
+   for (int i = 0; i < 16; i++)
+   {
+      htext[i] = outputText.at(i);
+   }
    htext[16] = 0;
 
-   printf("Text hex:  \n");
-   printf("%s\r", htext);
-   scanf("%s", &htext[0]);
+   std::cout << "Text hex:   " << htext << std::endl;
    HEXTOBIN(htext, inpt, hexinbin);
    printf("Text bin:   ");
+
    for (i = 0; i <= 63; i++)
       printf("%d", inpt[i]);
    printf("\n");
    printf("\n");
 
-   std::string inputText;
-   std::string outputText;
    printf("Type Key <8 ASCII characters + ENTER>:\n");
    printf("Key ascii:\n");
    printf("00000000\r");
    std::cin >> inputText;
    TEXTTOHEX(inputText, outputText);
+
    for (int i = 0; i < 16; i++)
    {
       hkey[i] = outputText.at(i);
    }
    hkey[16] = 0;
 
+   hkey[16] = 0;
    std::cout << "Key hex:    " << hkey << std::endl;
+
    HEXTOBIN(hkey, key, hexinbin);
    printf("Key bin:    ");
    for (i = 0; i <= 63; i++)
       printf("%d", key[i]);
    printf("\n");
    printf("\n");
+
    ksflg = 1;
    cyflg = 1;
    desflg = 1;
-   printf("DeCiphering is running...");
-   d_des(inpt, key, jotput, desflg, ip, ipm, ksflg, ipc1, ipc2, glicd, cyflg, iet, ipp, is, ibin);
+   printf("Ciphering is running...");
+   des(inpt, key, jotput, desflg, ip, ipm, ksflg, ipc1, ipc2, glicd, cyflg, iet, ipp, is, ibin);
    printf("Done.\n");
    printf("\n");
-
-   std::cout << "DeCipher ASCII: " << BINTOTEXT(jotput) << std::endl;
    BINTOHEX(jotput);
    printf("\n");
-   printf("DeCipher bin: ");
+   printf("Cipher bin: ");
    for (i = 0; i <= 63; i++)
       printf("%d", jotput[i]);
    printf("\n");
    printf("\n");
    printf("Press ENTER\n");
-   //getch();
+   getch();
 }
