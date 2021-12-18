@@ -282,13 +282,11 @@ void BINTOHEX(gl64array jotput)
 void TEXTTOHEX(std::string inputText, std::string &outputText)
 {
    std::stringstream ss;
-   for (const auto &item : inputText)
+   for (int i = 0; i <= 15; i++)
    {
-      ss << std::hex << int(item);
+      ss << std::hex << int(inputText[i]);
    }
-
    std::cout << std::endl;
-
    outputText = ss.str();
 }
 

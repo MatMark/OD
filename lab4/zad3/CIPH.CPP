@@ -10,6 +10,8 @@ and open the file for reading. */
 #include <math.h>
 #include <iostream>
 #include <sstream>
+#include <fstream>
+#include <random>
 
 typedef int gl32array[32];
 typedef int gl48array[48];
@@ -262,7 +264,7 @@ void BINTOHEX(gl64array jotput)
 {
    int i, j, inte, weight;
 
-   printf("Cipher hex: ");
+   printf("Cipher hex:       ");
    for (i = 0; i <= 15; i++)
    {
       inte = 0;
@@ -273,23 +275,49 @@ void BINTOHEX(gl64array jotput)
          weight = weight * 2;
       } /* Convertion intger to hexadecimal. */
       if (inte <= 9)
-         printf("%c   ", char(inte) + '0');
+         printf("%c", char(inte) + '0');
       else
-         printf("%c   ", char(inte) - 10 + 'a');
+         printf("%c", char(inte) - 10 + 'a');
    }
 }
 
 void TEXTTOHEX(std::string inputText, std::string &outputText)
 {
    std::stringstream ss;
-   for (const auto &item : inputText)
+   for (int i = 0; i <= 15; i++)
    {
-      ss << std::hex << int(item);
+      ss << std::hex << int(inputText[i]);
    }
-
    std::cout << std::endl;
-
    outputText = ss.str();
+}
+
+void writeCipher(gl64array jotput)
+{
+   int i, j, inte, weight;
+   std::ofstream file_out;
+   file_out.open("encrypted.txt", std::ios_base::app);
+   for (i = 0; i <= 15; i++)
+   {
+      inte = 0;
+      weight = 1; /* Convertion binary to int. */
+      for (j = 0; j <= 3; j++)
+      {
+         inte = inte + jotput[(i * 4 + 3 - j)] * weight;
+         weight = weight * 2;
+      } /* Convertion intger to hexadecimal. */
+      if (inte <= 9)
+      {
+         char tmp = char(inte) + '0';
+         file_out << tmp;
+      }
+      else
+      {
+         char tmp = char(inte) - 10 + 'a';
+         file_out << tmp;
+      }
+   }
+   file_out.close();
 }
 
 int main()
@@ -305,78 +333,135 @@ int main()
    gl4_16array ibin;
    gl4_16array hexinbin;
    char htext[17], hkey[17];
-   int a;
 
-   system("cls"); // clrscr();
+   std::random_device rd; // obtain a random number from hardware
+   std::mt19937 gen(rd()); // seed the generator
+   std::uniform_int_distribution<> distr(33, 127); // define the range
+
+   system("cls");
    glopen(&infile, "HEX.DAT");
    for (i = 0; i <= 15; i++)
       for (j = 0; j <= 3; j++)
          fscanf(infile, "%d", &(hexinbin[j][i]));
 
    fclose(infile);
-   printf("\n");
-   printf("*** PROGRAM CIPHER ***\n");
-   printf("\n");
 
-   std::string inputText;
-   std::string outputText;
-   printf("Type plaintext <8 ASCII characters + ENTER>:\n");
-   printf("Type ascii:\n");
-   printf("00000000\r");
-   std::cin >> inputText;
-   TEXTTOHEX(inputText, outputText);
-
-   for (int i = 0; i < 16; i++)
+   std::ifstream stream("input.txt", std::ifstream::binary);
+   if (stream)
    {
-      htext[i] = outputText.at(i);
+      ksflg = 1;
+      cyflg = 1;
+      desflg = 1;
+      // get length of file:
+      stream.seekg(0, stream.end);
+      int length = stream.tellg();
+      stream.seekg(0, stream.beg);
+
+      char *buffer = new char[8];
+
+      int iterations = length / 8;
+      std::cout << "Liczba pelnych blokow:           " << iterations << std::endl;
+      int tail_bytes = length - iterations * 8;
+      std::cout << "Liczba bajtow w niepelnym bloku: " << tail_bytes << std::endl;
+
+      std::string password;
+      std::string hexPassword;
+      std::cout << std::endl
+                << "Podaj klucz do szyfrowania: " << std::endl;
+      printf("00000000\r");
+      std::cin >> password;
+      TEXTTOHEX(password, hexPassword);
+      for (int i = 0; i < 16; i++)
+      {
+         hkey[i] = hexPassword.at(i);
+      }
+      hkey[16] = 0;
+      HEXTOBIN(hkey, key, hexinbin);
+      remove("encrypted.txt");
+      // read data as a block:
+      for (iterations; iterations > 0; iterations--)
+      {
+         std::string inBlock;
+         std::string outBlock;
+         std::cout << std::endl;
+         stream.read(buffer, 8);
+         for (int i = 0; i < 8; i++)
+         {
+            inBlock += buffer[i];
+         }
+         std::cout << "Block in ascii:   " << inBlock;
+
+         TEXTTOHEX(inBlock, outBlock);
+
+         for (int i = 0; i < 16; i++)
+         {
+            htext[i] = outBlock.at(i);
+         }
+         htext[16] = 0;
+
+         HEXTOBIN(htext, inpt, hexinbin);
+         des(inpt, key, jotput, desflg, ip, ipm, ksflg, ipc1, ipc2, glicd, cyflg, iet, ipp, is, ibin);
+         BINTOHEX(jotput);
+         writeCipher(jotput);
+      }
+      if (tail_bytes > 0)
+      {
+         std::string inBlock;
+         std::string outBlock;
+         std::cout << std::endl;
+         stream.read(buffer, tail_bytes);
+         for (int i = 0; i < tail_bytes; i++)
+         {
+            inBlock += buffer[i];
+         }
+         std::cout << "Random bytes:     ";
+         //add random number (as char) at the end
+         for (int i = 8 - tail_bytes; i > 0; i--)
+         {
+            int random_number = distr(gen);
+            char c = random_number;
+            inBlock += c;
+            std::cout << c;
+         }
+         std::cout << std::endl << "Block in ascii:   " << inBlock;
+         TEXTTOHEX(inBlock, outBlock);
+         for (int i = 0; i < 16; i++)
+         {
+            htext[i] = outBlock.at(i);
+         }
+         htext[16] = 0;
+         HEXTOBIN(htext, inpt, hexinbin);
+         des(inpt, key, jotput, desflg, ip, ipm, ksflg, ipc1, ipc2, glicd, cyflg, iet, ipp, is, ibin);
+         BINTOHEX(jotput);
+         writeCipher(jotput);
+      }
+      //block with length of last block
+      std::string inBlock;
+      std::string outBlock;
+      char c = tail_bytes + 40;
+      inBlock += c;
+      std::cout << std::endl << "Last block:       " << c;
+      //add random number (as char) at the end
+      for (int i = 7; i > 0; i--)
+      {
+         int random_number = distr(gen);
+         c = random_number;
+         inBlock += c;
+         std::cout << c;
+      }
+      TEXTTOHEX(inBlock, outBlock);
+      for (int i = 0; i < 16; i++)
+      {
+         htext[i] = outBlock.at(i);
+      }
+      htext[16] = 0;
+      HEXTOBIN(htext, inpt, hexinbin);
+      des(inpt, key, jotput, desflg, ip, ipm, ksflg, ipc1, ipc2, glicd, cyflg, iet, ipp, is, ibin);
+      BINTOHEX(jotput);
+      writeCipher(jotput);
+
+      stream.close();
+
+      delete[] buffer;
    }
-   htext[16] = 0;
-
-   std::cout << "Text hex:   " << htext << std::endl;
-   HEXTOBIN(htext, inpt, hexinbin);
-   printf("Text bin:   ");
-
-   for (i = 0; i <= 63; i++)
-      printf("%d", inpt[i]);
-   printf("\n");
-   printf("\n");
-
-   printf("Type Key <8 ASCII characters + ENTER>:\n");
-   printf("Key ascii:\n");
-   printf("00000000\r");
-   std::cin >> inputText;
-   TEXTTOHEX(inputText, outputText);
-
-   for (int i = 0; i < 16; i++)
-   {
-      hkey[i] = outputText.at(i);
-   }
-   hkey[16] = 0;
-
-   hkey[16] = 0;
-   std::cout << "Key hex:    " << hkey << std::endl;
-
-   HEXTOBIN(hkey, key, hexinbin);
-   printf("Key bin:    ");
-   for (i = 0; i <= 63; i++)
-      printf("%d", key[i]);
-   printf("\n");
-   printf("\n");
-
-   ksflg = 1;
-   cyflg = 1;
-   desflg = 1;
-   printf("Ciphering is running...");
-   des(inpt, key, jotput, desflg, ip, ipm, ksflg, ipc1, ipc2, glicd, cyflg, iet, ipp, is, ibin);
-   printf("Done.\n");
-   printf("\n");
-   BINTOHEX(jotput);
-   printf("\n");
-   printf("Cipher bin: ");
-   for (i = 0; i <= 63; i++)
-      printf("%d", jotput[i]);
-   printf("\n");
-   printf("\n");
-   printf("Press ENTER\n");
-   getch();
 }
