@@ -1,0 +1,7 @@
+ssh-keygen.exe
+
+cat .\test.pub | ssh matmark@192.168.0.64 "cat >> ~/.ssh/authorized_keys" 
+
+ssh -i .\test matmark@192.168.0.64 
+
+sftp -i .\test matmark@192.168.0.64 
